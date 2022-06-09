@@ -20,7 +20,7 @@ module.exports.createCard = (req, res) => {
   })
     .then((card) => res.send(card))
     .catch((err) => {
-      if (err.name === 'SomeErrorName') {
+      if (err.name === 'ValidationError') {
         return res.status(400).send({ message: 'incorrect data' });
       }
       return res.status(500).send({ message: 'error' });

@@ -18,7 +18,7 @@ module.exports.getUser = (req, res) => {
       res.send(user);
     })
     .catch((err) => {
-      if (err.name === 'SomeErrorName') {
+      if (err.name === 'CastError') {
         return res.status(400).send({ message: 'incorrect id' });
       }
       return res.status(500).send({ message: 'error' });
@@ -35,7 +35,7 @@ module.exports.createUser = (req, res) => {
   })
     .then((user) => res.send(user))
     .catch((err) => {
-      if (err.name === 'SomeErrorName') {
+      if (err.name === 'ValidationError') {
         return res.status(400).send({ message: 'incorrect data' });
       }
       return res.status(500).send({ message: 'error' });
@@ -57,7 +57,7 @@ module.exports.updateUserInfo = (req, res) => {
       res.send(user);
     })
     .catch((err) => {
-      if (err.name === 'SomeErrorName') {
+      if (err.name === 'ValidationError') {
         return res.status(400).send({ message: 'incorrect data' });
       }
       return res.status(500).send({ message: 'error' });
@@ -79,7 +79,7 @@ module.exports.updateUserAvatar = (req, res) => {
       res.send(user);
     })
     .catch((err) => {
-      if (err.name === 'SomeErrorName') {
+      if (err.name === 'ValidationError') {
         return res.status(400).send({ message: 'incorrect data' });
       }
       return res.status(500).send({ message: 'error' });
