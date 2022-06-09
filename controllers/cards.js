@@ -44,40 +44,17 @@ module.exports.deleteCard = (req, res) => {
     });
 };
 
-module.exports.likeCard = (req, res) => {
+module.exports.likeCard = (req) =>
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $addToSet: { likes: req.user._id } }, // добавить _id в массив, если его там нет
     { new: true },
-  )
-    .then((card) => {
-      if (!card) {
-        res.status(404).send({ message: 'Карточка не найдена' });
-        return;
-      }
-      res.send(card);
-    })
-    .catch((err) => {
-      if (err.name === 'CastError') {
-        return res.status(400).send({ message: 'Введен некорректый id' });
-      }
-      return res.status(500).send({ message: 'Произошла ошибка на сервере, попробуйте еще раз' });
-    });
-};
+  );
 
-module.exports.dislikeCard = (req, res) => {
+module.exports.dislikeCard = (req) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $pull: { likes: req.user._id } }, // убрать _id из массива
     { new: true },
-  )
-    .then((card) => {
-      res.send(card);
-    })
-    .catch((err) => {
-      if (err.name === 'CastError') {
-        return res.status(400).send({ message: 'Введен некорректый id' });
-      }
-      return res.status(500).send({ message: 'Произошла ошибка на сервере, попробуйте еще раз' });
-    });
+  );
 };
