@@ -44,12 +44,21 @@ module.exports.deleteCard = (req, res) => {
     });
 };
 
-module.exports.likeCard = (req) =>
-  Card.findByIdAndUpdate(
-    req.params.cardId,
-    { $addToSet: { likes: req.user._id } }, // добавить _id в массив, если его там нет
-    { new: true },
-  );
+module.exports.likeCard = (req, res) => {
+  Card.findByIdAndUpdate(req.params.cardId, { $addToSet: { likes: req.user._id } }, { new: true })
+    .then((cardData) => {
+      if (!cardData) {
+        return res.status(404).send({ message: 'Карточка не найдена' });
+      }
+      return res.send({ data: cardData });
+    })
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        return res.status(400).send({ message: 'Некорректные данные' });
+      }
+      return res.status(500).send({ message: 'Ошибка на сервере!' });
+    });
+};
 
 module.exports.dislikeCard = (req) => {
   Card.findByIdAndUpdate(
