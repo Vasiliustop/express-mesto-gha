@@ -1,6 +1,6 @@
 const Card = require('../models/card');
 
-module.exports.getCards = (_req, res) => {
+module.exports.getCard = (_req, res) => {
   Card.find({})
     .populate('owner')
     .then((card) => res.send(card))
