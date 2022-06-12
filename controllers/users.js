@@ -1,10 +1,10 @@
 const User = require('../models/user');
 
-module.exports.getUsers = (_req, res) => {
+module.exports.getUsers = (req, res) => {
   User.find({})
     .then((user) => res.send(user))
     .catch(() => {
-      res.status(500).send({ message: 'error' });
+      res.status(500).send({ message: 'Ошибка сервера' });
     });
 };
 
@@ -12,16 +12,16 @@ module.exports.getUser = (req, res) => {
   User.findById(req.params.userId)
     .then((user) => {
       if (!user) {
-        res.status(404).send({ message: 'user is not found' });
+        res.status(404).send({ message: 'Пользователь не существует' });
         return;
       }
       res.send(user);
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        return res.status(400).send({ message: 'incorrect id' });
+        return res.status(400).send({ message: `Введены некорректные данные: ${err.message}` });
       }
-      return res.status(500).send({ message: 'error' });
+      return res.status(500).send({ message: 'Ошибка сервера' });
     });
 };
 
@@ -36,9 +36,9 @@ module.exports.createUser = (req, res) => {
     .then((user) => res.send(user))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        return res.status(400).send({ message: 'incorrect data' });
+        return res.status(400).send({ message: `Введены некорректные данные: ${err.message}` });
       }
-      return res.status(500).send({ message: 'error' });
+      return res.status(500).send({ message: 'Ошибка сервера' });
     });
 };
 
@@ -51,16 +51,19 @@ module.exports.updateUserInfo = (req, res) => {
   })
     .then((user) => {
       if (!user) {
-        res.status(404).send({ message: 'user is not found' });
+        res.status(404).send({ message: 'Пользователь не существует' });
         return;
       }
       res.send(user);
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        return res.status(400).send({ message: 'incorrect data' });
+        return res.status(400).send({ message: `Введены некорректные данные: ${err.message}` });
       }
-      return res.status(500).send({ message: 'error' });
+      if (err.name === 'CastError') {
+        return res.status(400).send({ message: `Введены некорректные данные: ${err.message}` });
+      }
+      return res.status(500).send({ message: 'Ошибка сервера' });
     });
 };
 
@@ -73,15 +76,18 @@ module.exports.updateUserAvatar = (req, res) => {
   })
     .then((user) => {
       if (!user) {
-        res.status(404).send({ message: 'error' });
+        res.status(404).send({ message: 'Пользователь не существует' });
         return;
       }
       res.send(user);
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        return res.status(400).send({ message: 'incorrect data' });
+        return res.status(400).send({ message: `Введены некорректные данные: ${err.message}` });
       }
-      return res.status(500).send({ message: 'error' });
+      if (err.name === 'CastError') {
+        return res.status(400).send({ message: `Введены некорректные данные: ${err.message}` });
+      }
+      return res.status(500).send({ message: 'Ошибка сервера' });
     });
 };

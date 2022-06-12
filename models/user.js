@@ -4,19 +4,19 @@ const userSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: true,
-      minlength: 2,
-      maxlength: 30,
+      required: [true, 'Это поле обязательно для заполнения'],
+      minlength: [2, 'В данном поле требуется минимум 2 символа'],
+      maxlength: [30, 'В данном поле требуется максимум 30 символов'],
     },
     about: {
       type: String,
-      required: true,
-      minlength: 2,
-      maxlength: 30,
+      required: [true, 'Это поле обязательно для заполнения'],
+      minlength: [2, 'В данном поле требуется минимум 2 символа'],
+      maxlength: [30, 'В данном поле требуется максимум 30 символов'],
     },
     avatar: {
       type: String,
-      required: true,
+      required: [true, 'Это поле обязательно для заполнения'],
     },
   },
 );
