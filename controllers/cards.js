@@ -31,7 +31,7 @@ module.exports.deleteCard = (req, res) => {
   Card.findByIdAndRemove(req.params.cardId)
     .then((card) => {
       if (!card) {
-        res.status(404).send({ message: 'card is not found' });
+        res.status(404).send({ message: 'Кароточка не найдена' });
         return;
       }
       res.send(card);
