@@ -1,7 +1,11 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
+// const { celebrate, Joi } = require('celebrate');
 
+const { login, createUser } = require('./controllers/users');
+const auth = require('./middlewares/auth');
 // Слушаем 3000 порт
 const { PORT = 3000 } = process.env;
 
@@ -10,14 +14,13 @@ mongoose.connect('mongodb://localhost:27017/mestodb');
 const app = express();
 
 app.use(bodyParser.json());
+app.use(cookieParser());
 
-app.use((req, _res, next) => {
-  req.user = {
-    _id: '62a22b61a96662274b22d968', // вставьте сюда _id созданного в предыдущем пункте пользователя
-  };
+app.post('/signup', createUser);
 
-  next();
-});
+app.post('/signin', login);
+
+app.use(auth);
 
 app.use(require('./routes/users'));
 
