@@ -1,66 +1,51 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
+const NotFoundError = require('../errors/NotFoundError');
+const BadRequestError = require('../errors/BadRequestError');
+const AuthError = require('../errors/AuthError');
+const ConflictError = require('../errors/ConflictError');
 
 module.exports.getUserMe = (req, res, next) => {
   User.findById(req.user._id)
     .then((user) => {
       if (!user) {
-        res.status(404).send({ message: 'Пользователь не существует' });
+        throw new NotFoundError('Нет пользователя с таким id');
       }
-      return res.send(user);
+      return res.status(200).send(user);
     })
     // eslint-disable-next-line consistent-return
+    .catch((error) => {
+      if (error.name === 'CastError') {
+        next(new BadRequestError('Некорректный id пользователя'));
+      }
+      next(error);
+    });
+};
+
+module.exports.getUsers = (req, res, next) => {
+  User.find({})
+    .then((user) => res.send(user))
+    .catch(next);
+};
+
+module.exports.getUser = (req, res, next) => {
+  User.findById(req.params.userId)
+    .then((user) => {
+      if (!user) {
+        throw new NotFoundError('Пользователь не существует');
+      }
+      res.status(200).send(user);
+    })
     .catch((err) => {
       if (err.name === 'CastError') {
-        return res.status(400).send({ message: `Введены некорректные данные: ${err.message}` });
+        next(new BadRequestError('Введите корректный id'));
       }
       next(err);
     });
 };
 
-module.exports.getUsers = (req, res) => {
-  User.find({})
-    .then((user) => res.send(user))
-    .catch(() => {
-      res.status(500).send({ message: 'Ошибка сервера' });
-    });
-};
-
-module.exports.getUser = (req, res) => {
-  User.findById(req.params.userId)
-    .then((user) => {
-      if (!user) {
-        res.status(404).send({ message: 'Пользователь не существует' });
-        return;
-      }
-      res.send(user);
-    })
-    .catch((err) => {
-      if (err.name === 'CastError') {
-        return res.status(400).send({ message: `Введены некорректные данные: ${err.message}` });
-      }
-      return res.status(500).send({ message: 'Ошибка сервера' });
-    });
-};
-
-module.exports.getUser = (req, res) => {
-  User.findById(req.params.userId)
-    .then((user) => {
-      if (!user) {
-        return res.status(404).send({ message: 'Пользователь не найден' });
-      }
-      return res.send(user);
-    })
-    .catch((err) => {
-      if (err.name === 'CastError') {
-        return res.status(400).send({ message: 'Некорреvктные данные' });
-      }
-      return res.status(500).send({ message: 'Ошибка на сервере!' });
-    });
-};
-
-module.exports.createUser = (req, res) => {
+module.exports.createUser = (req, res, next) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
@@ -76,13 +61,16 @@ module.exports.createUser = (req, res) => {
     .then((user) => res.send(user))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        return res.status(400).send({ message: `Введены некорректные данные: ${err.message}` });
+        next(new BadRequestError('Переданы некорректные данные'));
       }
-      return res.status(500).send({ message: 'Ошибка сервера' });
+      if (err.code === 11000) {
+        next(new ConflictError('Вы уже зарегистрированы, выполните вход'));
+      }
+      next(err);
     });
 };
 
-module.exports.login = (req, res) => {
+module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
 
   return User.findUserByCredentials(email, password)
@@ -94,14 +82,12 @@ module.exports.login = (req, res) => {
         sameSite: true,
       }).end();
     })
-    .catch((err) => {
-      res
-        .status(401)
-        .send({ message: err.message });
+    .catch(() => {
+      next(new AuthError('Введен неверный логин или пароль'));
     });
 };
 
-module.exports.updateUserInfo = (req, res) => {
+module.exports.updateUserInfo = (req, res, next) => {
   const { name, about } = req.body;
 
   User.findByIdAndUpdate(req.user._id, { name, about }, {
@@ -110,23 +96,19 @@ module.exports.updateUserInfo = (req, res) => {
   })
     .then((user) => {
       if (!user) {
-        res.status(404).send({ message: 'Пользователь не существует' });
-        return;
+        throw new NotFoundError('Пользователь не существует');
       }
-      res.send(user);
+      res.status(200).send(user);
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        return res.status(400).send({ message: `Введены некорректные данные: ${err.message}` });
+        next(new BadRequestError('Введены некорректные данные'));
       }
-      if (err.name === 'CastError') {
-        return res.status(400).send({ message: `Введены некорректные данные: ${err.message}` });
-      }
-      return res.status(500).send({ message: 'Ошибка сервера' });
+      next(err);
     });
 };
 
-module.exports.updateUserAvatar = (req, res) => {
+module.exports.updateUserAvatar = (req, res, next) => {
   const { avatar } = req.body;
 
   User.findByIdAndUpdate(req.user._id, { avatar }, {
@@ -135,18 +117,14 @@ module.exports.updateUserAvatar = (req, res) => {
   })
     .then((user) => {
       if (!user) {
-        res.status(404).send({ message: 'Пользователь не существует' });
-        return;
+        throw new NotFoundError('Пользователь не существует');
       }
-      res.send(user);
+      res.status(200).send(user);
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        return res.status(400).send({ message: `Введены некорректные данные: ${err.message}` });
-      }
       if (err.name === 'CastError') {
-        return res.status(400).send({ message: `Введены некорректные данные: ${err.message}` });
+        next(new BadRequestError('Введены некорректные данные'));
       }
-      return res.status(500).send({ message: 'Ошибка сервера' });
+      next(err);
     });
 };
