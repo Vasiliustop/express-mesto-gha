@@ -32,13 +32,13 @@ module.exports.createCard = (req, res, next) => {
 };
 
 module.exports.deleteCard = (req, res, next) => {
-  Card.findById(req.params)
+  Card.findById(req.params.cardId)
     .orFail(() => new NotFoundError('Карточка не найдена'))
     .then((card) => {
-      if (card.owner.toString() !== req.user._id) {
+      if (card.owner.toString() !== req.user._id.toString()) {
         throw new ForbiddenError('Недостаточно прав');
       } else {
-        return Card.findByIdAndRemove(req.params)
+        return Card.remove(req.params.cardId)
           .then((data) => {
             res.send({ data });
           });
