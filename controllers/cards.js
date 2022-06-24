@@ -25,21 +25,24 @@ module.exports.createCard = (req, res, next) => {
     .catch((err) => {
       if (err.name === 'ValidationError') {
         next(new BadRequestError('Введены некорректные данные'));
+      } else {
+        next(err);
       }
-      next(err);
     });
 };
 
 module.exports.deleteCard = (req, res, next) => {
-  Card.findByIdAndRemove(req.params.cardId)
+  const { id } = req.params;
+  Card.findById(id)
+    .orFail(() => new NotFoundError('Нет карточки по заданному id'))
     .then((card) => {
-      if (!card) {
-        throw new NotFoundError('Карточка не найдена');
+      if (!card.owner.equals(req.user._id)) {
+        return next(new ForbiddenError('Недостаточно прав'));
       }
-      if (card.owner._id.toString() !== req.user._id.toString()) {
-        throw new ForbiddenError('Это не ваша карточка');
-      }
-      res.send(card);
+      return card.remove()
+        .then(() => {
+          res.send({ message: 'Карточка удалена' });
+        });
     })
     .catch(next);
 };

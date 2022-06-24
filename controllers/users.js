@@ -15,11 +15,10 @@ module.exports.getUserMe = (req, res, next) => {
       return res.status(200).send(user);
     })
     // eslint-disable-next-line consistent-return
-    .catch((error) => {
-      if (error.name === 'CastError') {
+    .catch((err) => {
+      if (err.name === 'CastError') {
         next(new BadRequestError('Некорректный id пользователя'));
-      }
-      next(error);
+      } else { next(err); }
     });
 };
 
@@ -40,8 +39,7 @@ module.exports.getUser = (req, res, next) => {
     .catch((err) => {
       if (err.name === 'CastError') {
         next(new BadRequestError('Введите корректный id'));
-      }
-      next(err);
+      } else { next(err); }
     });
 };
 
@@ -69,8 +67,7 @@ module.exports.createUser = (req, res, next) => {
       }
       if (err.code === 11000) {
         next(new ConflictError('Вы уже зарегистрированы, выполните вход'));
-      }
-      next(err);
+      } else { next(err); }
     });
 };
 
@@ -107,8 +104,7 @@ module.exports.updateUserInfo = (req, res, next) => {
     .catch((err) => {
       if (err.name === 'ValidationError') {
         next(new BadRequestError('Введены некорректные данные'));
-      }
-      next(err);
+      } else { next(err); }
     });
 };
 
@@ -128,7 +124,6 @@ module.exports.updateUserAvatar = (req, res, next) => {
     .catch((err) => {
       if (err.name === 'CastError') {
         next(new BadRequestError('Введены некорректные данные'));
-      }
-      next(err);
+      } else { next(err); }
     });
 };
