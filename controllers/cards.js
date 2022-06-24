@@ -32,17 +32,17 @@ module.exports.createCard = (req, res, next) => {
 };
 
 module.exports.deleteCard = (req, res, next) => {
-  const { id } = req.params;
-  Card.findById(id)
-    .orFail(() => new NotFoundError('Нет карточки по заданному id'))
+  Card.findById(req.params)
+    .orFail(() => new NotFoundError('Карточка не найдена'))
     .then((card) => {
-      if (!card.owner.equals(req.user._id)) {
-        return next(new ForbiddenError('Недостаточно прав'));
+      if (card.owner.toString() !== req.user._id) {
+        throw new ForbiddenError('Недостаточно прав');
+      } else {
+        return Card.findByIdAndRemove(req.params)
+          .then((data) => {
+            res.send({ data });
+          });
       }
-      return card.remove()
-        .then(() => {
-          res.send({ message: 'Карточка удалена' });
-        });
     })
     .catch(next);
 };
